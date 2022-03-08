@@ -1,0 +1,3 @@
+/home/student/OPERATION SYSTEM/ASSIGNMENT1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/student/OPERATION SYSTEM/ASSIGNMENT1/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/student/OPERATION SYSTEM/ASSIGNMENT1/cmake-build-debug/CMakeFiles/ASSIGNMENT1.dir
