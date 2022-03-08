@@ -7,7 +7,6 @@
 */
 int main(){
     int page;
-    printf("no_mapping: %d\n",NO_MAPPING);
     printf("starting pre-made tester...\n");
 	uint32_t pt0 = alloc_page_frame();
 	assert(page_table_query(pt0, 0xcafe) == NO_MAPPING);
@@ -33,7 +32,7 @@ int main(){
     printf("finito.\n\n");
 
     printf("mapping ppn's to vpn's...\n");
-    for (page=0;page<10;++page){
+    for (page=0;page<2;++page){
         if (page<0x04000){
             page_table_update(pt0,0xa0000 | page,page);
         }
@@ -48,7 +47,7 @@ int main(){
         }
     }
     printf("checking that the mapping is correct...\n");
-    for (page=0;page<10;++page){
+    for (page=0;page<2;++page){
         if (page<0x04000){
             assert(page_table_query(pt0,0xa0000 | page)==page);
         }
@@ -65,14 +64,14 @@ int main(){
     printf("donezo.\n\n");
 
     printf("unmapping everything...\n");
-    for(page=0;page<MAX_PAGES;page++){
+    for(page=0;page<2;page++){
         page_table_update(pt0,page,NO_MAPPING);
         page_table_update(pt1,page,NO_MAPPING);
         page_table_update(pt2,page,NO_MAPPING);
         page_table_update(pt3,page,NO_MAPPING);
     }
     printf("checking it is indeed unmapped...\n");
-    for (page=0;page<MAX_PAGES;++page){
+    for (page=0;page<2;++page){
         assert(page_table_query(pt0,page)==NO_MAPPING);
         assert(page_table_query(pt1,page)==NO_MAPPING);
         assert(page_table_query(pt2,page)==NO_MAPPING);
@@ -81,11 +80,16 @@ int main(){
     printf("done and done.\n\n");
 
     printf("mapping the maximum number of pages to pt0... (2^20 pages)\n");
-    for(page=0;page<MAX_PAGES;page++){
+    for(page=0;page<513;page++){
+
+
+        if (page==512){
+            printf("something");
+        }
         page_table_update(pt0,page,page);
     }
     printf("checking that indeed everything is mapped, and also that the mapping is correct...\n");
-    for(page=0;page<MAX_PAGES;page++){
+    for(page=0;page<513;page++){
         assert(page_table_query(pt0,page)==page);
     }
     printf("excellente");
