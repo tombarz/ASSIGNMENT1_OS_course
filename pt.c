@@ -21,15 +21,15 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn);
 
 uint64_t page_table_query(uint64_t pt, uint64_t vpn){
     uint64_t * node = phys_to_virt(pt);
-    uint64_t a = 48;
-    uint64_t b = 56;
+    uint64_t a = 36;
+    uint64_t b = 44;
     uint64_t bitMask;
     uint64_t index = 0;
     for (int i = 0; i < 4; i++) {
-        bitMask = createMask(a,b)>>13;
+        bitMask = createMask(a,b);
         index = bitMask & vpn;
-        index = index >> (a+13);
-        if ((node[index] & 1) == 0){
+        index = index >> a;
+        if ((node[index] & 1) == 0 || node[index]==NO_MAPPING){
             return NO_MAPPING;
         } else{
             node = phys_to_virt(node[index]-1);
@@ -37,7 +37,7 @@ uint64_t page_table_query(uint64_t pt, uint64_t vpn){
             b-=9;
         }
     }
-    bitMask = createMask(a,b)>>13;
+    bitMask = createMask(a,b);
     index = bitMask & vpn;
         //index = index >> a;
     uint64_t val = node[index];
@@ -84,16 +84,16 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn){
             return;
         } else{
           uint64_t* root = phys_to_virt(pt);
-            int a = 48;
-            int b = 56;
+            int a = 36;
+            int b = 44;
             for (int i = 0; i < 4; i++) {
-                uint64_t bitMask = createMask(a,b)>>13;
+                uint64_t bitMask = createMask(a,b);
                 uint64_t index = bitMask & vpn;
-                index = index >> (a+13);
+                index = index >> a;
                 if(isNodeEmpty(root)==1){
                     initNode(root);
                 }
-                if (root[index] == NO_MAPPING){
+                if (root[index] == NO_MAPPING || ((root[index]&1)==0)){
                     uint64_t PPN = alloc_page_frame();
                     root[index] = (PPN<<12)|1;/*PTE with valid bit*/
                 }
@@ -105,7 +105,7 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn){
             if(isNodeEmpty(root)==1){
                 initNode(root);
             }
-            uint64_t bitMask = createMask(a,b)>>13;
+            uint64_t bitMask = createMask(a,b);
             uint64_t index = bitMask & vpn;
             //index = index >> a;
             root[index] = ppn;
@@ -114,23 +114,27 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn){
     }else{
         if (ppn==NO_MAPPING){
             uint64_t* root = phys_to_virt(pt);
-            int a = 48;
-            int b = 56;
+            int a = 36;
+            int b = 44;
             uint64_t * addressArray = calloc(5, sizeof(uint64_t));
             addressArray[0] = pt;
             int * indices = calloc(4, sizeof(int));
             for (int i = 0; i < 4; i++) {
-                uint64_t bitMask = createMask(a, b)>>13;
+                uint64_t bitMask = createMask(a, b);
                 uint64_t index = bitMask & vpn;
-                index = index  >> (a+13);
+                index = index  >> a;
                 a -= 9;
                 b -= 9;
-                uint64_t nextAddress = root[index]-1;
+                uint64_t nextAddress = root[index];
+                if (root[index]!=NO_MAPPING){
+                     nextAddress = root[index]-1;
+                }
+
                 addressArray[i] = nextAddress;
                 indices[i]=index;
                 root = phys_to_virt(nextAddress);
             }
-            uint64_t bitMask = createMask(a, b)>>13;
+            uint64_t bitMask = createMask(a, b);
             uint64_t index = (bitMask & vpn);
             root[index]=NO_MAPPING;
             cleanTree(addressArray,indices);
